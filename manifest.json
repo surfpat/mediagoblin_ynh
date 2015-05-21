@@ -1,0 +1,55 @@
+{
+  "name": "MediaGoblin",
+  "id": "mediagoblin",
+  "description": {
+    "en": "A free software media publishing platform",
+    "fr": "Plateforme de diffusion de différents types de multimédia"
+  },
+  "version": "0.7.1~git",
+  "maintainer": {
+    "name": "jerome",
+    "email": "jerome@yunohost.org"
+  },
+  "multi_instance": "false",
+  "arguments": {
+    "install" : [
+      {
+        "name": "domain",
+        "type": "domain",
+        "ask": {
+          "en": "Choose a domain for MediaGoblin",
+          "fr": "Choisissez un domaine pour MediaGoblin"
+        },
+        "example": "domain.org"
+      },
+      {
+        "name": "path",
+        "type": "path",
+        "ask": {
+          "en": "Choose a path for MediaGoblin",
+          "fr": "Choisissez un chemin pour MediaGoblin"
+        },
+        "example": "/mediagoblin",
+        "default": "/mediagoblin"
+      },
+      {
+        "name": "admin",
+        "type": "user",
+        "ask": {
+          "en": "Choose the administrator (must be an existing YunoHost user)",
+          "fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
+        },
+        "example": "john"
+      },
+      {
+        "name": "public",
+        "ask": {
+          "en": "Is it a public site?",
+          "fr": "Est-ce un site public ?"
+        },
+        "choices": ["Yes", "No"],
+        "default": "Yes"
+      }
+    ]
+  }
+}

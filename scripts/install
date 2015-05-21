@@ -1,0 +1,128 @@
+#!/bin/bash
+
+source ./_common.sh
+
+# Retrieve arguments
+domain=$1
+path=${2%/}
+admin=$3
+is_public=$4
+
+# Global variable
+DESTDIR="/srv/${domain}/${APP}"
+
+# Check domain/path availability
+sudo yunohost app checkurl $domain$path -a $APP
+if [[ ! $? -eq 0 ]]; then
+    exit 1
+fi
+
+# Check that admin user is an existing account
+sudo yunohost user list --json | grep -q "\"username\": \"$admin\""
+if [[ ! $? -eq 0 ]]; then
+    echo "Error: the chosen admin user does not exist"
+    exit 1
+fi
+
+# Change current directory to app's package root
+cd ../
+PKGDIR=$(pwd)
+
+# Install dependencies
+equivs-build conf/mediagoblin-meta-deps
+sudo dpkg -i ${APP}-meta-deps_${VERSION}+${METAREV}_all.deb
+sudo apt-get -f -y --no-install-recommends install
+if [[ $? -ne 0 ]]; then
+    sudo apt-get -y --purge autoremove mediagoblin-meta-deps
+    echo "Error: unable to install dependencies"
+    exit 1
+fi
+
+# Prepare destination folder
+sudo rm -rf $DESTDIR
+sudo mkdir -p ${DESTDIR}
+
+# Create a system user and set permissions
+sudo useradd -c "GNU MediaGoblin system account" -d /home/${APP} -U -m -r $APP
+sudo chown -hR ${APP}: $DESTDIR
+
+# Configure the database
+exec_cmd "createuser -D -R -S $APP" postgres
+exec_cmd "createdb -E UNICODE -O $APP $APP" postgres
+
+# Retrieve sources and process the installation
+## FIXME: Patch sources to be installed on Wheezy, fix bugs and make use
+##   of the httpauth plugin
+exec_cmd "cd $DESTDIR \
+  && git clone git://git.sv.gnu.org/mediagoblin.git -b stable . \
+  && git checkout $COMMIT \
+  && git submodule init && git submodule update \
+  && git apply ${PKGDIR}/patch/* \
+  && ./experimental-bootstrap.sh && ./configure && make \
+  && ./bin/pip install scikits.audiolab flup"
+if [[ $? -ne 0 ]]; then
+    echo "Error: unable to retrieve and install MediaGoblin"
+    exit 1
+fi
+
+# Set MediaGoblin settings
+## TODO: Retrieve real portal path from SSOwat conf with jq
+portal_url="https://$(cat /etc/yunohost/current_host)/yunohost/sso"
+sed -i "s@YNH_PATH@${path}@g" conf/mediagoblin_local.ini
+sed -i "s@YNH_DOMAIN@${domain}@g" conf/mediagoblin_local.ini
+sed -i "s@YNH_ADMIN_USER@${admin}@g" conf/mediagoblin_local.ini
+sed -i "s@YNH_PORTAL_URL@${portal_url}@g" conf/mediagoblin_local.ini
+sudo cp conf/mediagoblin_local.ini ${DESTDIR}/
+sudo chown -hR ${APP}: $DESTDIR/mediagoblin_local.ini
+
+# Copy and install plugins
+sudo cp -r sources/httpauth ${DESTDIR}/extlib/
+sudo chown -hR ${APP}: $DESTDIR/extlib/httpauth
+exec_cmd "cd ${DESTDIR}/extlib/httpauth \
+  && ${DESTDIR}/bin/python setup.py develop"
+
+# Create needed directories and fix permissions
+sudo mkdir -p ${DESTDIR}/user_dev/media/public \
+              ${DESTDIR}/user_dev/plugin_static \
+              ${DESTDIR}/user_dev/theme_static
+sudo chown -hR ${APP}: $DESTDIR/user_dev
+sudo chown -hR mediagoblin:www-data ${DESTDIR}/mediagoblin/static \
+                                    ${DESTDIR}/user_dev/media/public \
+                                    ${DESTDIR}/user_dev/theme_static
+sudo chmod 775 ${DESTDIR}/mediagoblin/static \
+               ${DESTDIR}/user_dev/media/public \
+               ${DESTDIR}/user_dev/theme_static
+
+# Install MediaGoblin database
+exec_cmd "cd ${DESTDIR} && ./bin/gmg dbupdate"
+
+# Configure and install init scripts
+sed -i "s@YNH_DESTDIR@${DESTDIR}@g" conf/*.init
+sudo cp conf/mediagoblin-paster.init /etc/init.d/mediagoblin-paster
+sudo cp conf/mediagoblin-celery-worker.init /etc/init.d/mediagoblin-celery-worker
+sudo insserv mediagoblin-paster
+sudo insserv mediagoblin-celery-worker
+sudo yunohost service add mediagoblin-paster -l "/var/log/${APP}/mediagoblin-paster.log"
+sudo yunohost service add mediagoblin-celery-worker -l "/var/log/${APP}/mediagoblin-paster.log"
+
+# Add nginx configuration
+sed -i "s@YNH_PATH@${path%/}@g" conf/nginx.conf
+sed -i "s@YNH_DESTDIR@${DESTDIR}@g" conf/nginx.conf
+sudo cp conf/nginx.conf /etc/nginx/conf.d/${domain}.d/${APP}.conf
+
+# Save app settings
+sudo yunohost app setting $APP admin -v $admin
+sudo yunohost app setting $APP is_public -v $is_public
+
+# Set SSOwat settings
+if [ $is_public = "Yes" ]; then
+    sudo yunohost app setting $APP unprotected_uris -v "/"
+else
+    sudo yunohost app setting $APP protected_uris -v "/"
+fi
+
+# Restart services
+sudo yunohost app ssowatconf
+sudo service nginx reload
+sudo service mediagoblin-paster start
+sudo service mediagoblin-celery-worker start

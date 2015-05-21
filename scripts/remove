@@ -1,0 +1,32 @@
+#!/bin/bash
+
+source ./_common.sh
+
+# Retrieve settings
+domain=$(sudo yunohost app setting $APP domain)
+
+# Global variable
+DESTDIR="/srv/${domain}/${APP}"
+
+# Stop and remove the service
+sudo service mediagoblin-paster stop
+sudo service mediagoblin-celery-worker stop
+sudo yunohost service remove mediagoblin-paster
+sudo yunohost service remove mediagoblin-celery-worker
+sudo rm -f /etc/init.d/mediagoblin-paster /etc/init.d/mediagoblin-celery-worker
+
+# Remove folders
+sudo rm -rf $DESTDIR
+sudo rm -f /etc/nginx/conf.d/${domain}.d/${APP}.conf
+
+## Drop the database
+sudo su -c "dropdb $APP" - postgres
+sudo su -c "dropuser $APP" - postgres
+
+# Remove app dependencies and system user
+sudo apt-get -y -q autoremove ${APP}-meta-deps
+sudo deluser --quiet --system $APP
+sudo delgroup --quiet --only-if-empty $APP
+
+# ... And finally restart nginx!
+sudo service nginx reload

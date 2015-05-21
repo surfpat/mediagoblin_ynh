@@ -1,0 +1,13 @@
+diff --git a/mediagoblin/templates/mediagoblin/bits/frontpage_welcome.html b/mediagoblin/templates/mediagoblin/bits/frontpage_welcome.html
+index 3d93ea5..ec53159 100644
+--- a/mediagoblin/templates/mediagoblin/bits/frontpage_welcome.html
++++ b/mediagoblin/templates/mediagoblin/bits/frontpage_welcome.html
+@@ -44,7 +44,7 @@
+           {%- endtrans %}
+       </div>
+       <div class="four columns offset-by-one">
+-        <img class="welcomeimage" src="/mgoblin_static/images/home_goblin.png">
++        <img class="welcomeimage" src="{{ request.staticdirect('/images/home_goblin.png') }}">
+       </div>
+     </div>
+     <div class="clear"></div>

@@ -1,0 +1,93 @@
+#!/bin/bash
+
+source ./_common.sh
+
+# Retrieve settings
+domain=$(sudo yunohost app setting $APP domain)
+path=$(sudo yunohost app setting $APP path)
+admin=$(sudo yunohost app setting $APP admin)
+
+# Global variable
+DESTDIR="/srv/${domain}/${APP}"
+
+# Change current directory to app's package root
+cd ../
+PKGDIR=$(pwd)
+
+# Install dependencies
+equivs-build conf/mediagoblin-meta-deps
+sudo dpkg -i ${APP}-meta-deps_${VERSION}+${METAREV}_all.deb
+sudo apt-get -f -y --no-install-recommends install
+if [[ $? -ne 0 ]]; then
+    sudo apt-get -y --purge autoremove mediagoblin-meta-deps
+    echo "Error: unable to install dependencies"
+    exit 1
+fi
+
+# Set MediaGoblin settings
+## TODO: Retrieve real portal path from SSOwat conf with jq
+portal_url="https://$(cat /etc/yunohost/current_host)/yunohost/sso"
+sed -i "s@YNH_PATH@${path}@g" conf/mediagoblin_local.ini
+sed -i "s@YNH_DOMAIN@${domain}@g" conf/mediagoblin_local.ini
+sed -i "s@YNH_ADMIN_USER@${admin}@g" conf/mediagoblin_local.ini
+sed -i "s@YNH_PORTAL_URL@${portal_url}@g" conf/mediagoblin_local.ini
+sudo cp conf/mediagoblin_local.ini ${DESTDIR}/
+sudo chown -hR ${APP}: $DESTDIR/mediagoblin_local.ini
+
+# Stop services
+sudo service mediagoblin-paster stop
+sudo service mediagoblin-celery-worker stop
+
+# Update sources and MediaGoblin
+## FIXME: Patch sources to be installed on Wheezy, fix bugs and make use
+##   of the httpauth plugin
+exec_cmd "cd $DESTDIR \
+  && git stash && git fetch origin \
+  && git checkout -B stable && git checkout $COMMIT \
+  && git submodule update \
+  && git apply ${PKGDIR}/patch/* \
+  && ./bin/python setup.py develop --upgrade \
+  && ./bin/pip install --upgrade scikits.audiolab flup"
+if [[ $? -ne 0 ]]; then
+    echo "Error: unable to retrieve and install MediaGoblin"
+    exit 1
+fi
+
+# Copy and install plugins
+sudo cp -r sources/httpauth ${DESTDIR}/extlib/
+sudo chown -hR ${APP}: $DESTDIR/extlib/httpauth
+exec_cmd "cd ${DESTDIR}/extlib/httpauth \
+  && ${DESTDIR}/bin/python setup.py develop"
+
+# Create needed directories and fix permissions
+sudo mkdir -p ${DESTDIR}/user_dev/media/public \
+              ${DESTDIR}/user_dev/plugin_static \
+              ${DESTDIR}/user_dev/theme_static
+sudo chown -hR ${APP}: $DESTDIR/user_dev
+sudo chown -hR mediagoblin:www-data ${DESTDIR}/mediagoblin/static \
+                                    ${DESTDIR}/user_dev/media/public \
+                                    ${DESTDIR}/user_dev/theme_static
+sudo chmod 775 ${DESTDIR}/mediagoblin/static \
+               ${DESTDIR}/user_dev/media/public \
+               ${DESTDIR}/user_dev/theme_static
+
+# Install MediaGoblin database
+exec_cmd "cd ${DESTDIR} && ./bin/gmg dbupdate"
+
+# Configure and install init scripts
+sed -i "s@YNH_DESTDIR@${DESTDIR}@g" conf/*.init
+sudo cp conf/mediagoblin-paster.init /etc/init.d/mediagoblin-paster
+sudo cp conf/mediagoblin-celery-worker.init /etc/init.d/mediagoblin-celery-worker
+sudo insserv mediagoblin-paster
+sudo insserv mediagoblin-celery-worker
+
+# Add nginx configuration
+sed -i "s@YNH_PATH@${path%/}@g" conf/nginx.conf
+sed -i "s@YNH_DESTDIR@${DESTDIR}@g" conf/nginx.conf
+sudo cp conf/nginx.conf /etc/nginx/conf.d/${domain}.d/${APP}.conf
+
+# Restart services
+sudo yunohost app ssowatconf
+sudo service nginx reload
+sudo service mediagoblin-paster start
+sudo service mediagoblin-celery-worker start

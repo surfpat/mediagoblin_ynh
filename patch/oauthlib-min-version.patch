@@ -1,0 +1,17 @@
+diff --git a/setup.py b/setup.py
+index 327221d..36deceb 100644
+--- a/setup.py
++++ b/setup.py
+@@ -67,10 +67,10 @@ try:
+         'itsdangerous',
+         'pytz',
+         'six>=1.4.1',
+-        'oauthlib',
++        'oauthlib>=0.5',
+         'unidecode',
+         'jsonschema',
+-        'requests',
++        'requests>=0.13.2',
+         'pyld',
+         'ExifRead',
+ 

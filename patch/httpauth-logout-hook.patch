@@ -1,0 +1,17 @@
+diff --git a/mediagoblin/auth/views.py b/mediagoblin/auth/views.py
+index 3d132f8..fb80596 100644
+--- a/mediagoblin/auth/views.py
++++ b/mediagoblin/auth/views.py
+@@ -117,7 +117,11 @@ def logout(request):
+     # Maybe deleting the user_id parameter would be enough?
+     request.session.delete()
+ 
+-    return redirect(request, "index")
++    response = hook_handle('auth_logout_response', request)
++    if response:
++        return response
++    else:
++        return redirect(request, 'index')
+ 
+ 
+ def verify_email(request):
