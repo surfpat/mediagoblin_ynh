@@ -29,6 +29,7 @@ cd ../
 PKGDIR=$(pwd)
 
 # Install dependencies
+sudo apt-get -y -q install equivs
 equivs-build conf/mediagoblin-meta-deps
 sudo dpkg -i ${APP}-meta-deps_${VERSION}+${METAREV}_all.deb
 sudo apt-get -f -y --no-install-recommends install
