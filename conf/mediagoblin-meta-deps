@@ -5,7 +5,7 @@ Homepage: http://mediagoblin.org/
 Standards-Version: 3.9.2
 
 Package: mediagoblin-meta-deps
-Version: 0.7.1~git+1
+Version: 0.7.1-1
 Maintainer: Jerome <jerome@yunohost.org>
 Depends: git-core,
  python, python-dev, python-lxml, python-imaging, python-virtualenv, python-pip,

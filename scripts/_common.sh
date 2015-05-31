@@ -4,9 +4,9 @@
 # ---------------
 
 APP="mediagoblin"
-VERSION=0.7.1~git
+VERSION=0.7.1
 METAREV=1
-COMMIT="9fa1e602b40d1e531335bf903dc7b15632818cf0"
+COMMIT="12fac853a4489a9d10cf365de0f71e1404d4d9fe"
 
 
 # Helpers
