@@ -7,6 +7,9 @@ domain=$(sudo yunohost app setting $APP domain)
 path=$(sudo yunohost app setting $APP path)
 admin=$(sudo yunohost app setting $APP admin)
 
+# Remove ending /
+path=${path%/}
+
 # Global variable
 DESTDIR="/srv/${domain}/${APP}"
 
@@ -82,7 +85,7 @@ sudo insserv mediagoblin-paster
 sudo insserv mediagoblin-celery-worker
 
 # Add nginx configuration
-sed -i "s@YNH_PATH@${path%/}@g" conf/nginx.conf
+sed -i "s@YNH_PATH@${path}@g" conf/nginx.conf
 sed -i "s@YNH_DESTDIR@${DESTDIR}@g" conf/nginx.conf
 sudo cp conf/nginx.conf /etc/nginx/conf.d/${domain}.d/${APP}.conf
 
