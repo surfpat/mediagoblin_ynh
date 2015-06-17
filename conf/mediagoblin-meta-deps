@@ -12,7 +12,8 @@ Depends: git-core,
  postgresql, postgresql-client, python-psycopg2,
  build-essential, automake,
  python-gst0.10, gstreamer0.10-plugins-base, gstreamer0.10-plugins-bad, gstreamer0.10-plugins-good, gstreamer0.10-plugins-ugly, gstreamer0.10-ffmpeg,
- python-numpy, python-scipy, libsndfile1-dev, libasound2-dev
+ python-numpy, python-scipy, libsndfile1-dev, libasound2-dev,
+ poppler-utils
 Architecture: all
 # Readme: <README.Debian file; defaults to a generic one>
 # Extra-Files: <comma-separated list of additional files for the doc directory>
