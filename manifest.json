@@ -6,6 +6,7 @@
     "fr": "Plateforme de diffusion de différents types de multimédia"
   },
   "version": "0.7.1~git",
+  "license": "AGPL-3",
   "maintainer": {
     "name": "jerome",
     "email": "jerome@yunohost.org"
