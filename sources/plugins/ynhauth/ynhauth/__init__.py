@@ -27,7 +27,7 @@ CONFIG = {
     'header': 'REMOTE_USER',
     'header_email': 'HTTP_EMAIL',
     'admin': '',
-    'logout_response': None,
+    'logout_redirect': None,
 }
 
 
