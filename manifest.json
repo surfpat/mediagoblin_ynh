@@ -47,10 +47,19 @@
         "name": "public",
         "type": "boolean",
         "ask": {
-          "en": "Public site with open registration",
-          "fr": "Site public avec inscriptions ouvertes"
+          "en": "Public site",
+          "fr": "Site public"
         },
         "default": true
+      },
+      {
+        "name": "registration",
+        "type": "boolean",
+        "ask": {
+          "en": "Enable registration with internal authentication",
+          "fr": "Activer les inscriptions avec l'authentification interne"
+        },
+        "default": false
       }
     ]
   }

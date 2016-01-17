@@ -19,6 +19,9 @@ domain=$(ynh_app_setting_get $app domain)
 path=$(ynh_app_setting_get $app path)
 path=${path%/}
 admin=$(ynh_app_setting_get $app admin)
+is_public=$(ynh_app_setting_get $app is_public)
+registration=$(ynh_app_setting_get $app registration)
+registration=${registration:-0}
 
 DESTDIR="/var/www/$app"
 OLDDIR="/srv/${domain}/$app"
@@ -74,7 +77,11 @@ sudo cp -r ../sources/plugins/* "${DESTDIR}/extlib/"
 sudo chown -hR mediagoblin:www-data "${DESTDIR}/extlib"
 
 # Set and copy MediaGoblin configuration
-tmp_conf="../conf/mediagoblin.ini"
+if [[ $is_public -eq 1 && $registration -eq 1 ]]; then
+  tmp_conf="../conf/mediagoblin_registration.ini"
+else
+  tmp_conf="../conf/mediagoblin.ini"
+fi
 mediagoblin_conf="${DESTDIR}/mediagoblin.ini"
 ## TODO: Retrieve portal path dynamically
 portal_url="https://$(cat /etc/yunohost/current_host)/yunohost/sso"

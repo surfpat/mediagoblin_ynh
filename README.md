@@ -28,6 +28,9 @@ The transcoding is done in a separate thread thanks to Celery.
 The authentication is transparently managed by SSOwat which is made
 available in GNU MediaGoblin by the *ynhauth* beta plugin and some patches
 to the source code.
+It is also possible to enable registration using *basic_auth* plugin which
+will only rely on the MediaGoblin internal authentication - and not YunoHost
+one.
 
 ## TODO
 
