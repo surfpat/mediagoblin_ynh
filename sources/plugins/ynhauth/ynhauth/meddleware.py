@@ -18,7 +18,7 @@
 import six
 import logging
 
-from mediagoblin.auth.tools import get_default_privileges
+from mediagoblin.auth.tools import get_default_privileges, check_auth_enabled
 from mediagoblin.db.models import User, Privilege
 from mediagoblin.meddleware import BaseMeddleware
 from mediagoblin.tools.request import setup_user_in_request
@@ -38,8 +38,10 @@ class YnhAuthMeddleware(BaseMeddleware):
             request.headers.get(CONFIG['header'], '')
         )
         if not username:
-            # log current user out
-            if 'user_id' in request.session:
+            # log current user out if auth is disabled
+            if not check_auth_enabled() and (
+                    request.user or 'user_id' in request.session):
+                _log.debug('Cleaning invalid user session')
                 request.session.delete()
                 request.user = None
             return
