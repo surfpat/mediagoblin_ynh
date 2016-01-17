@@ -42,12 +42,8 @@ def logout_response(request):
         return
     return redirect(request, location=CONFIG['logout_redirect'])
 
-def auth():
-    return True
-
 
 hooks = {
     'setup': setup_plugin,
-    'authentication': auth,
     'auth_logout_response': logout_response,
 }
