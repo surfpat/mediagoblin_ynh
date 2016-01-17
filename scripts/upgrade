@@ -92,12 +92,13 @@ SETUPLOG="/tmp/${app}-upgrade.log"
 sudo touch "$SETUPLOG" && sudo chown admin $SETUPLOG
 
 # Create a fresh virtualenv
-[[ $REINSTALL_ENV -eq 1 ]] \
-  && exec_cmd "cd \"${DESTDIR}\" \
+if [[ $REINSTALL_ENV -eq 1 ]]; then
+  exec_cmd "cd \"${DESTDIR}\" \
  && rm -rf ./bin ./lib \
  && export VIRTUALENV_FLAGS=\"--quiet\" \
  && ./bootstrap.sh && ./configure --quiet && make" &>>$SETUPLOG \
   || die "Unable to reinstall MediaGoblin. Please see log at ${SETUPLOG}"
+fi
 
 # Upgrade MediaGoblin
 exec_cmd "cd \"${DESTDIR}\" \
