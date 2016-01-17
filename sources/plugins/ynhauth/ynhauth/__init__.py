@@ -25,7 +25,7 @@ _log = logging.getLogger(__name__)
 
 CONFIG = {
     'header': 'REMOTE_USER',
-    'header_email': 'HTTP_EMAIL',
+    'header_email': 'EMAIL',
     'admin': '',
     'logout_redirect': None,
 }
