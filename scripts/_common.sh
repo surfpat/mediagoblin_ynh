@@ -1,21 +1,34 @@
-#!/bin/bash
+#
+# Common variables
+#
 
-# Global variable
-# ---------------
+# MediaGoblin version
+VERSION=0.8.1
 
-APP="mediagoblin"
-VERSION=0.7.1
-METAREV=1
-COMMIT="12fac853a4489a9d10cf365de0f71e1404d4d9fe"
+# Package name for MediaGoblin dependencies
+DEPS_PKG_NAME="mediagoblin-deps"
 
+#
+# Common helpers
+#
 
-# Helpers
-# -------
+# Print a message to stderr and exit
+# usage: die msg [retcode]
+die() {
+  printf "%s" "$1" 1>&2
+  exit "${2:-1}"
+}
 
-# Execute a command as another user ($APP by default)
-# usage: exec_cmd CMD [USER]
+# Execute a command as another user (mediagoblin by default)
+# usage: exec_cmd cmd [user]
 exec_cmd() {
-    user=$APP
-    [[ $# -eq 2 ]] && user=$2
-    sudo su -c "$1" --shell /bin/bash -- $user
+  sudo su -c "$1" --shell /bin/bash -- ${2:-mediagoblin}
+}
+
+# Check system requirements
+check_requirements() {
+  [[ $(lsb_release -r | awk '{split($2,r,"."); print r[1]}') -ge 8 ]] \
+    || die "GNU MediaGoblin ${VERSION} requires at least Debian Jessie."
+  [[ -d /run/systemd/system ]] \
+    || die "The application is only compatible with systemd yet."
 }

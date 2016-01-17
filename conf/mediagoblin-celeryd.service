@@ -1,0 +1,18 @@
+[Unit]
+Description=GNU MediaGoblin Celery Daemon
+
+[Service]
+User=mediagoblin
+Group=www-data
+Type=simple
+WorkingDirectory=#DESTDIR#
+# Celery process will run as the `mediagoblin` user after start.
+Environment=MEDIAGOBLIN_CONFIG=#DESTDIR#/mediagoblin.ini \
+            CELERY_CONFIG_MODULE=mediagoblin.init.celery.from_celery
+ExecStart=#DESTDIR#/bin/celery worker \
+              --logfile=/var/log/#APP#/celery.log \
+              --loglevel=INFO
+PIDFile=/run/#APP#/mediagoblin-celeryd.pid
+
+[Install]
+WantedBy=multi-user.target

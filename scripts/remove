@@ -1,32 +1,40 @@
 #!/bin/bash
 
-source ./_common.sh
+# Set app specific variables
+app=$1
+dbname=$app
+dbuser=$app
+
+# Load common variables and helpers
+. ./_common.sh
+
+# Source app helpers
+. /usr/share/yunohost/apps/helpers
 
 # Retrieve settings
-domain=$(sudo yunohost app setting $APP domain)
-
-# Global variable
-DESTDIR="/srv/${domain}/${APP}"
+domain=$(ynh_app_setting_get $app domain)
 
 # Stop and remove the service
-sudo service mediagoblin-paster stop
-sudo service mediagoblin-celery-worker stop
+sudo systemctl -q stop mediagoblin-paster || true
+sudo systemctl -q stop mediagoblin-celeryd || true
+sudo systemctl -q disable mediagoblin-paster
+sudo systemctl -q disable mediagoblin-celeryd
 sudo yunohost service remove mediagoblin-paster
-sudo yunohost service remove mediagoblin-celery-worker
-sudo rm -f /etc/init.d/mediagoblin-paster /etc/init.d/mediagoblin-celery-worker
+sudo yunohost service remove mediagoblin-celeryd
+sudo rm -f /etc/systemd/system/mediagoblin-{paster,celeryd}.service
 
-# Remove folders
-sudo rm -rf $DESTDIR
-sudo rm -f /etc/nginx/conf.d/${domain}.d/${APP}.conf
+# Delete app directory and configurations
+sudo rm -rf "/var/www/${app}"
+[[ -n $domain ]] && sudo rm -f "/etc/nginx/conf.d/${domain}.d/${app}.conf"
 
-## Drop the database
-sudo su -c "dropdb $APP" - postgres
-sudo su -c "dropuser $APP" - postgres
+# Drop the database
+exec_cmd "cd && dropdb ${dbname}" postgres
+exec_cmd "cd && dropuser ${dbuser}" postgres
 
 # Remove app dependencies and system user
-sudo apt-get -y -q autoremove ${APP}-meta-deps
-sudo deluser --quiet --system $APP
-sudo delgroup --quiet --only-if-empty $APP
+ynh_package_autoremove "$DEPS_PKG_NAME" || true
+sudo deluser --quiet --system mediagoblin
 
-# ... And finally restart nginx!
-sudo service nginx reload
+# Reload services
+sudo systemctl daemon-reload
+sudo service nginx reload || true

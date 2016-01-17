@@ -1,8 +1,8 @@
 diff --git a/mediagoblin/auth/views.py b/mediagoblin/auth/views.py
-index 3d132f8..fb80596 100644
+index 03a46f7..9f15563 100644
 --- a/mediagoblin/auth/views.py
 +++ b/mediagoblin/auth/views.py
-@@ -117,7 +117,11 @@ def logout(request):
+@@ -120,7 +120,11 @@ def logout(request):
      # Maybe deleting the user_id parameter would be enough?
      request.session.delete()
  

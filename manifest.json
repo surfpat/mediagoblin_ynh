@@ -5,21 +5,22 @@
     "en": "A free software media publishing platform",
     "fr": "Plateforme de diffusion de différents types de multimédia"
   },
-  "version": "0.7.1~git",
+  "version": "0.8.1",
   "license": "AGPL-3",
   "maintainer": {
     "name": "jerome",
     "email": "jerome@yunohost.org"
   },
   "multi_instance": "false",
+  "min_version": "2.3.6",
   "arguments": {
     "install" : [
       {
         "name": "domain",
         "type": "domain",
         "ask": {
-          "en": "Choose a domain for MediaGoblin",
-          "fr": "Choisissez un domaine pour MediaGoblin"
+          "en": "Domain on which MediaGoblin will be served",
+          "fr": "Domaine sur lequel MediaGoblin sera accessible"
         },
         "example": "domain.org"
       },
@@ -27,8 +28,8 @@
         "name": "path",
         "type": "path",
         "ask": {
-          "en": "Choose a path for MediaGoblin",
-          "fr": "Choisissez un chemin pour MediaGoblin"
+          "en": "Absolute MediaGoblin path within the domain",
+          "fr": "Chemin d'accès absolu de MediaGoblin depuis le domaine"
         },
         "example": "/mediagoblin",
         "default": "/mediagoblin"
@@ -37,19 +38,19 @@
         "name": "admin",
         "type": "user",
         "ask": {
-          "en": "Choose the administrator (must be an existing YunoHost user)",
-          "fr": "Administrateur du site (doit être un utilisateur YunoHost existant)"
+          "en": "User with administrative privileges",
+          "fr": "Utilisateur avec les privilèges administrateur"
         },
         "example": "john"
       },
       {
         "name": "public",
+        "type": "boolean",
         "ask": {
-          "en": "Is it a public site?",
-          "fr": "Est-ce un site public ?"
+          "en": "Public site with open registration",
+          "fr": "Site public avec inscriptions ouvertes"
         },
-        "choices": ["Yes", "No"],
-        "default": "Yes"
+        "default": true
       }
     ]
   }

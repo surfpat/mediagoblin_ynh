@@ -1,0 +1,22 @@
+[Unit]
+Description=GNU MediaGoblin
+
+[Service]
+Type=forking
+User=mediagoblin
+Group=www-data
+Environment=CELERY_ALWAYS_EAGER=false
+WorkingDirectory=#DESTDIR#
+ExecStart=#DESTDIR#/bin/paster serve \
+              #DESTDIR#/paste.ini \
+              --pid-file=/run/#APP#/mediagoblin.pid \
+              --log-file=/var/log/#APP#/mediagoblin.log \
+              --daemon \
+              --server-name=fcgi fcgi_host=127.0.0.1 fcgi_port=26543
+ExecStop=#DESTDIR#/bin/paster serve \
+             --pid-file=/run/#APP#/mediagoblin.pid \
+              #DESTDIR#/paste.ini stop
+PIDFile=/run/#APP#/mediagoblin.pid
+
+[Install]
+WantedBy=multi-user.target
