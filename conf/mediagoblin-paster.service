@@ -5,6 +5,8 @@ Description=GNU MediaGoblin
 Type=forking
 User=mediagoblin
 Group=www-data
+RuntimeDirectory=mediagoblin
+RuntimeDirectoryMode=0750
 Environment=CELERY_ALWAYS_EAGER=false
 WorkingDirectory=#DESTDIR#
 ExecStart=#DESTDIR#/bin/paster serve \

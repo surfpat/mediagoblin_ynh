@@ -92,9 +92,8 @@ sudo chown mediagoblin: "$mediagoblin_conf"
 # Populate the database
 exec_cmd "cd \"${DESTDIR}\" && ./bin/gmg dbupdate"
 
-# Create needed directories and set ownership
-sudo mkdir -p /run/${app} /var/log/${app}
-sudo chown -hR mediagoblin:root /run/${app} /var/log/${app}
+# Create needed directories with proper ownership
+sudo install -o mediagoblin -g root -m 770 -d /var/log/${app}
 
 # Set and install systemd services
 sed -i "s@#APP#@${app}@g"         ../conf/mediagoblin-*.service
