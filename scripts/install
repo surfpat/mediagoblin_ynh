@@ -65,6 +65,10 @@ sudo useradd -c "GNU MediaGoblin system account" \
 sudo mv "$TMPDIR" "$DESTDIR"
 sudo chown -hR mediagoblin:www-data "$DESTDIR"
 
+# Create data directory
+DATADIR="/home/yunohost.app/$app"
+sudo install -o mediagoblin -g www-data -m 770 -d "$DATADIR"
+
 # Set up MediaGoblin
 SETUPLOG="/tmp/${app}-setup.log"
 sudo touch "$SETUPLOG" && sudo chown admin $SETUPLOG
@@ -72,7 +76,6 @@ exec_cmd "cd \"${DESTDIR}\" \
  && export VIRTUALENV_FLAGS=\"--quiet\" \
  && ./bootstrap.sh && ./configure --quiet && make \
  && ./bin/easy_install scikits.audiolab \
- && mkdir user_dev && chmod 750 user_dev \
  && cd extlib/ynhauth \
  && ${DESTDIR}/bin/python ./setup.py develop" &>$SETUPLOG \
   || die "Unable to set up MediaGoblin. Please see log at ${SETUPLOG}"
@@ -95,8 +98,15 @@ sed -i "s@#PATH#@${path}@g"            "$tmp_conf"
 sed -i "s@#DBNAME#@${dbname}@g"        "$tmp_conf"
 sed -i "s@#ADMIN#@${admin}@g"          "$tmp_conf"
 sed -i "s@#PORTALURL#@${portal_url}@g" "$tmp_conf"
+sed -i "s@#DATADIR#@${DATADIR}@g"      "$tmp_conf"
 sudo cp "$tmp_conf" "$mediagoblin_conf"
 sudo chown mediagoblin: "$mediagoblin_conf"
+
+# Set and copy Paste configuration
+paste_conf="${DESTDIR}/paste.ini"
+sed -i "s@#DATADIR#@${DATADIR}@g" ../conf/paste.ini
+sudo cp ../conf/paste.ini "$paste_conf"
+sudo chown mediagoblin: "$paste_conf"
 
 # Populate the database
 exec_cmd "cd \"${DESTDIR}\" && ./bin/gmg dbupdate"
@@ -113,8 +123,9 @@ sudo yunohost service add mediagoblin-paster -l "/var/log/${app}/mediagoblin.log
 
 # Copy and set nginx configuration
 nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
-sed -i "s@#PATH#@${path}@g"        ../conf/nginx.conf
-sed -i "s@#DESTDIR#@${DESTDIR}/@g" ../conf/nginx.conf
+sed -i "s@#PATH#@${path}@g"       ../conf/nginx.conf
+sed -i "s@#DESTDIR#@${DESTDIR}@g" ../conf/nginx.conf
+sed -i "s@#DATADIR#@${DATADIR}@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf "$nginx_conf"
 
 # Save app settings

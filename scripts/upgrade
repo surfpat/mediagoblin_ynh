@@ -25,6 +25,7 @@ registration=${registration:-0}
 
 DESTDIR="/var/www/$app"
 OLDDIR="/srv/${domain}/$app"
+DATADIR="/home/yunohost.app/$app"
 
 # Apply some changes on old installation
 REINSTALL_ENV=0
@@ -38,7 +39,8 @@ if [[ -d $OLDDIR ]]; then
   sudo yunohost service remove mediagoblin-celery-worker
   sudo rm -f /etc/init.d/mediagoblin-{paster,celery-worker}
 
-  # Move to the new directory
+  # Move to the new directories
+  sudo mv "${OLDDIR}/user_dev" "$DATADIR"
   sudo mv "$OLDDIR" "$DESTDIR"
 
   # Remove old config, plugin and meta package
@@ -90,8 +92,15 @@ sed -i "s@#PATH#@${path}@g"            "$tmp_conf"
 sed -i "s@#DBNAME#@${dbname}@g"        "$tmp_conf"
 sed -i "s@#ADMIN#@${admin}@g"          "$tmp_conf"
 sed -i "s@#PORTALURL#@${portal_url}@g" "$tmp_conf"
+sed -i "s@#DATADIR#@${DATADIR}@g"      "$tmp_conf"
 sudo cp "$tmp_conf" "$mediagoblin_conf"
 sudo chown mediagoblin: "$mediagoblin_conf"
+
+# Set and copy Paste configuration
+paste_conf="${DESTDIR}/paste.ini"
+sed -i "s@#DATADIR#@${DATADIR}@g" ../conf/paste.ini
+sudo cp ../conf/paste.ini "$paste_conf"
+sudo chown mediagoblin: "$paste_conf"
 
 # Prepare setup log
 SETUPLOG="/tmp/${app}-upgrade.log"
@@ -126,8 +135,9 @@ sudo cp ../conf/mediagoblin-*.service /etc/systemd/system/
 
 # Copy and set nginx configuration
 nginx_conf="/etc/nginx/conf.d/${domain}.d/${app}.conf"
-sed -i "s@#PATH#@${path}@g"        ../conf/nginx.conf
-sed -i "s@#DESTDIR#@${DESTDIR}/@g" ../conf/nginx.conf
+sed -i "s@#PATH#@${path}@g"       ../conf/nginx.conf
+sed -i "s@#DESTDIR#@${DESTDIR}@g" ../conf/nginx.conf
+sed -i "s@#DATADIR#@${DATADIR}@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf "$nginx_conf"
 
 # Reload services

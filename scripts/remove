@@ -24,7 +24,8 @@ sudo yunohost service remove mediagoblin-celeryd
 sudo rm -f /etc/systemd/system/mediagoblin-{paster,celeryd}.service
 
 # Delete app directory and configurations
-sudo rm -rf "/var/www/${app}"
+sudo rm -rf "/var/www/$app"
+sudo rm -rf "/home/yunohost.app/$app"
 [[ -n $domain ]] && sudo rm -f "/etc/nginx/conf.d/${domain}.d/${app}.conf"
 
 # Drop the database
