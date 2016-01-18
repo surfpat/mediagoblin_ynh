@@ -15,6 +15,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+import os
+import json
 import logging
 
 from mediagoblin.meddleware import ENABLED_MEDDLEWARE
@@ -23,24 +25,30 @@ from mediagoblin.tools.response import redirect
 
 _log = logging.getLogger(__name__)
 
-CONFIG = {
-    'header': 'REMOTE_USER',
-    'header_email': 'EMAIL',
-    'admin': '',
-    'logout_redirect': None,
-}
+ADMIN_USERNAME = None
 
 
 def setup_plugin():
     _log.info('Setting up YunoHost SSO Auth...')
 
-    CONFIG.update(pluginapi.get_config('ynhauth'))
+    config = pluginapi.get_config('ynhauth')
+    if 'admin' in config:
+        global ADMIN_USERNAME
+        ADMIN_USERNAME = config['admin']
+
     ENABLED_MEDDLEWARE.append('ynhauth.meddleware:YnhAuthMeddleware')
 
 def logout_response(request):
-    if not CONFIG['logout_redirect']:
+    try:
+        with open('/etc/ssowat/conf.json') as f:
+            ssowat = json.load(f)
+        logout_url = 'https://{0}{1}?action=logout'.format(
+            ssowat['portal_domain'], ssowat['portal_path'],
+        )
+    except (IOError, KeyError):
         return
-    return redirect(request, location=CONFIG['logout_redirect'])
+    else:
+        return redirect(request, location=logout_url)
 
 
 hooks = {

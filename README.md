@@ -38,5 +38,4 @@ login page.
 ## TODO
 
 * Add backup/restore scripts
-* Improve *ynhauth* plugin, e.g. retrieve SSOwat portal URL dynamically
 * ...

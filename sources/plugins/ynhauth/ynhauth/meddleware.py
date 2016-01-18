@@ -23,9 +23,12 @@ from mediagoblin.db.models import User, Privilege
 from mediagoblin.meddleware import BaseMeddleware
 from mediagoblin.tools.request import setup_user_in_request
 
-from ynhauth import CONFIG
+from ynhauth import ADMIN_USERNAME
 
 _log = logging.getLogger(__name__)
+
+HEADER_USER = 'REMOTE_USER'
+HEADER_EMAIL = 'EMAIL'
 
 
 class YnhAuthMeddleware(BaseMeddleware):
@@ -35,7 +38,7 @@ class YnhAuthMeddleware(BaseMeddleware):
         _log.debug('Trying to authorize the user via YunoHost SSO Auth')
 
         username = six.text_type(
-            request.headers.get(CONFIG['header'], '')
+            request.headers.get(HEADER_USER, '')
         )
         if not username:
             # log current user out if auth is disabled
@@ -61,11 +64,12 @@ class YnhAuthMeddleware(BaseMeddleware):
 
             user = User()
             user.username = username
-            if CONFIG['header_email']:
-                user.email = six.text_type(
-                    request.headers.get(CONFIG['header_email'], '')
-                )
-                _log.debug('Found email address {0}'.format(user.email))
+            email = six.text_type(
+                request.headers.get(HEADER_EMAIL, '')
+            )
+            if email:
+                _log.debug('Found email address {0}'.format(email))
+                user.email = email
 
             # give the user the default privileges
             default_privileges = get_default_privileges(user)
@@ -73,7 +77,7 @@ class YnhAuthMeddleware(BaseMeddleware):
                 Privilege.query.filter(
                     Privilege.privilege_name==u'active').one()
             )
-            if username == CONFIG['admin']:
+            if ADMIN_USERNAME and username == ADMIN_USERNAME:
                 _log.debug('Giving admin privileges to user')
                 default_privileges.append(
                     Privilege.query.filter(

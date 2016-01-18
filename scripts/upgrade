@@ -85,13 +85,10 @@ else
   tmp_conf="../conf/mediagoblin.ini"
 fi
 mediagoblin_conf="${DESTDIR}/mediagoblin.ini"
-## TODO: Retrieve portal path dynamically
-portal_url="https://$(cat /etc/yunohost/current_host)/yunohost/sso"
 sed -i "s@#DOMAIN#@${domain}@g"        "$tmp_conf"
 sed -i "s@#PATH#@${path}@g"            "$tmp_conf"
 sed -i "s@#DBNAME#@${dbname}@g"        "$tmp_conf"
 sed -i "s@#ADMIN#@${admin}@g"          "$tmp_conf"
-sed -i "s@#PORTALURL#@${portal_url}@g" "$tmp_conf"
 sed -i "s@#DATADIR#@${DATADIR}@g"      "$tmp_conf"
 sudo cp "$tmp_conf" "$mediagoblin_conf"
 sudo chown mediagoblin: "$mediagoblin_conf"
