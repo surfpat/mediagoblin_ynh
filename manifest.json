@@ -13,6 +13,10 @@
   },
   "multi_instance": "false",
   "min_version": "2.3.6",
+  "services": [
+    "mediagoblin-paster",
+    "mediagoblin-celeryd"
+  ],
   "arguments": {
     "install" : [
       {
