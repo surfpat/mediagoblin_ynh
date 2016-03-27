@@ -3,7 +3,7 @@
 set -e
 
 # Set app specific variables
-app=$1
+app=${!#}
 dbname=$app
 dbuser=$app
 

@@ -8,7 +8,7 @@ path=${2%/}
 admin=$3
 is_public=$4
 registration=$5
-app=$6
+app=${!#}
 
 # Load common variables
 . ./_common.sh
