@@ -23,7 +23,7 @@ dbname=$app
 dbuser=$app
 
 # Source app helpers
-. /usr/share/yunohost/apps/helpers
+. /usr/share/yunohost/helpers
 
 # TODO: Check domain/path availability with app helper
 sudo yunohost app checkurl $domain$path -a $app \

@@ -12,7 +12,9 @@
     "email": "jerome@yunohost.org"
   },
   "multi_instance": "false",
-  "min_version": "2.3.6",
+  "requirements": {
+    "yunohost": ">= 2.3.10"
+  },
   "services": [
     "mediagoblin-paster",
     "mediagoblin-celeryd"

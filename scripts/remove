@@ -9,7 +9,7 @@ dbuser=$app
 . ./_common.sh
 
 # Source app helpers
-. /usr/share/yunohost/apps/helpers
+. /usr/share/yunohost/helpers
 
 # Retrieve settings
 domain=$(ynh_app_setting_get $app domain)

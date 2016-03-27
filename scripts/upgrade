@@ -12,7 +12,7 @@ dbuser=$app
 check_requirements || die "System requirements are not met."
 
 # Source app helpers
-. /usr/share/yunohost/apps/helpers
+. /usr/share/yunohost/helpers
 
 # Retrieve settings
 domain=$(ynh_app_setting_get $app domain)
