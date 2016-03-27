@@ -35,8 +35,8 @@ if [[ -d $OLDDIR ]]; then
   # Stop and remove old services
   sudo service mediagoblin-paster stop || true
   sudo service mediagoblin-celery-worker stop || true
-  sudo yunohost service remove mediagoblin-paster
-  sudo yunohost service remove mediagoblin-celery-worker
+  sudo yunohost service remove mediagoblin-paster || true
+  sudo yunohost service remove mediagoblin-celery-worker || true
   sudo rm -f /etc/init.d/mediagoblin-{paster,celery-worker}
 
   # Move to the new directories
