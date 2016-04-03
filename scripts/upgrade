@@ -65,14 +65,13 @@ ynh_package_install_from_equivs ../conf/${DEPS_PKG_NAME}.control \
   || die "Unable to install dependencies"
 
 # Update sources
-sudo cp -r ../patch "$DESTDIR"
+sudo cp -r ../patches "$DESTDIR"
 exec_cmd "cd \"${DESTDIR}\" \
  && git reset --hard -q && git fetch -q --tags origin \
  && git checkout -q v${VERSION} \
- && git submodule -q update \
- && git apply ./patch/*.patch" \
+ && git apply ./patches/*.patch" \
   || die "Unable to update MediaGoblin sources."
-sudo rm -rf "${DESTDIR}/patch"
+sudo rm -rf "${DESTDIR}/patches"
 
 # Copy additionnal plugins and fix permissions
 sudo cp -r ../sources/plugins/* "${DESTDIR}/extlib/"
@@ -99,22 +98,16 @@ sed -i "s@#DATADIR#@${DATADIR}@g" ../conf/paste.ini
 sudo cp ../conf/paste.ini "$paste_conf"
 sudo chown mediagoblin: "$paste_conf"
 
-# Prepare setup log
-SETUPLOG="/tmp/${app}-upgrade.log"
-#TODO:add date
-sudo touch "$SETUPLOG" && sudo chown admin $SETUPLOG
-
-# Create a fresh virtualenv
-if [[ $REINSTALL_ENV -eq 1 ]]; then
-  exec_cmd "cd \"${DESTDIR}\" \
- && rm -rf ./bin ./lib \
- && export VIRTUALENV_FLAGS=\"--quiet\" \
- && ./bootstrap.sh && ./configure --quiet && make" &>>$SETUPLOG \
-  || die "Unable to reinstall MediaGoblin. Please see log at ${SETUPLOG}"
-fi
+# Clean current virtualenv
+[[ $REINSTALL_ENV -eq 1 ]] \
+  && sudo rm -rf "${DESTDIR}/bin" "${DESTDIR}/lib"
 
 # Upgrade MediaGoblin
+SETUPLOG="/tmp/${app}-upgrade.log"
+sudo touch "$SETUPLOG" && sudo chown admin $SETUPLOG
 exec_cmd "cd \"${DESTDIR}\" \
+ && export VIRTUALENV_FLAGS=\"--quiet\" \
+ && ./bootstrap.sh && ./configure --quiet && make \
  && ./bin/python setup.py develop --upgrade \
  && ./bin/easy_install --upgrade scikits.audiolab \
  && ./bin/gmg dbupdate \

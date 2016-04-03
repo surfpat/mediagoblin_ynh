@@ -3,6 +3,8 @@
 [MediaGoblin](http://mediagoblin.org/) is a free software media publishing platform
 that anyone can run.
 
+**Shipped version:** 0.9.0
+
 ## Requirements
 
 It now requires at least Debian Jessie with *systemd* and the current testing

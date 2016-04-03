@@ -49,8 +49,7 @@ TMPDIR=$(ynh_mkdir_tmp)
 (cd "$TMPDIR" \
  && git clone -q git://git.savannah.gnu.org/mediagoblin.git -b stable . \
  && git checkout -q v${VERSION} \
- && git submodule -q init && git submodule -q update \
- && git apply ${PKGDIR}/patch/*.patch) \
+ && git apply ${PKGDIR}/patches/*.patch) \
   || die "Unable to fetch MediaGoblin sources."
 
 # Copy additionnal plugins
@@ -71,11 +70,12 @@ sudo install -o mediagoblin -g www-data -m 770 -d "$DATADIR"
 
 # Set up MediaGoblin
 SETUPLOG="/tmp/${app}-setup.log"
-sudo touch "$SETUPLOG" && sudo chown admin $SETUPLOG
+sudo touch "$SETUPLOG" && sudo chown admin "$SETUPLOG"
 exec_cmd "cd \"${DESTDIR}\" \
  && export VIRTUALENV_FLAGS=\"--quiet\" \
  && ./bootstrap.sh && ./configure --quiet && make \
  && ./bin/easy_install scikits.audiolab \
+ && mkdir -p user_dev && chmod 750 user_dev \
  && cd extlib/ynhauth \
  && ${DESTDIR}/bin/python ./setup.py develop" &>$SETUPLOG \
   || die "Unable to set up MediaGoblin. Please see log at ${SETUPLOG}"

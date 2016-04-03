@@ -3,7 +3,7 @@
 #
 
 # MediaGoblin version
-VERSION=0.8.1
+VERSION=0.9.0
 
 # Package name for MediaGoblin dependencies
 DEPS_PKG_NAME="mediagoblin-deps"

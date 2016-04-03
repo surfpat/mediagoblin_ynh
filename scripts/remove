@@ -34,7 +34,7 @@ exec_cmd "cd && dropuser ${dbuser}" postgres
 
 # Remove app dependencies and system user
 ynh_package_autoremove "$DEPS_PKG_NAME" || true
-sudo deluser --quiet --system mediagoblin
+sudo deluser --quiet --remove-home --system mediagoblin
 
 # Reload services
 sudo systemctl daemon-reload
