@@ -19,7 +19,7 @@ import six
 import logging
 
 from mediagoblin.auth.tools import get_default_privileges, check_auth_enabled
-from mediagoblin.db.models import User, Privilege
+from mediagoblin.db.models import LocalUser, Privilege
 from mediagoblin.meddleware import BaseMeddleware
 from mediagoblin.tools.request import setup_user_in_request
 
@@ -58,11 +58,11 @@ class YnhAuthMeddleware(BaseMeddleware):
                 return
 
         # create the user as needed
-        user = User.query.filter(User.username==username).first()
+        user = LocalUser.query.filter(LocalUser.username==username).first()
         if not user:
             _log.debug('Creating new user {0}'.format(username))
 
-            user = User()
+            user = LocalUser()
             user.username = username
             email = six.text_type(
                 request.headers.get(HEADER_EMAIL, '')
