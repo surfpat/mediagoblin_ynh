@@ -38,6 +38,7 @@ def setup_plugin():
 
     ENABLED_MEDDLEWARE.append('ynhauth.meddleware:YnhAuthMeddleware')
 
+
 def logout_response(request):
     try:
         with open('/etc/ssowat/conf.json') as f:
@@ -51,7 +52,12 @@ def logout_response(request):
         return redirect(request, location=logout_url)
 
 
+def auth():
+    return True
+
+
 hooks = {
     'setup': setup_plugin,
+    'authentication': auth,
     'auth_logout_response': logout_response,
 }
