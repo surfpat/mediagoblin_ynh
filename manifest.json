@@ -11,7 +11,7 @@
     "name": "jerome",
     "email": "jerome@yunohost.org"
   },
-  "multi_instance": "false",
+  "multi_instance": false,
   "requirements": {
     "yunohost": ">= 2.3.10"
   },
