@@ -1,18 +1,13 @@
 #!/bin/bash
 
-set -e
+# Exit on command errors and treat unset variables as an error
+set -eu
 
-# Set app specific variables
-app=${!#}
-dbname=$app
-dbuser=$app
-
-# Load common variables and helpers
+# Load common variables
 . ./_common.sh
-check_requirements || die "System requirements are not met."
 
-# Source app helpers
-. /usr/share/yunohost/helpers
+# Check system requirements
+check_requirements || ynh_die "System requirements are not met."
 
 # Retrieve settings
 domain=$(ynh_app_setting_get $app domain)
@@ -22,6 +17,10 @@ admin=$(ynh_app_setting_get $app admin)
 is_public=$(ynh_app_setting_get $app is_public)
 registration=$(ynh_app_setting_get $app registration)
 registration=${registration:-0}
+
+# Set app specific variables
+dbname=$app
+dbuser=$app
 
 DESTDIR="/var/www/$app"
 OLDDIR="/srv/${domain}/$app"
@@ -56,13 +55,13 @@ else
 fi
 
 # Check destination directory
-[[ ! -d $DESTDIR ]] && die \
+[[ ! -d $DESTDIR ]] && ynh_die \
 "The destination directory '$DESTDIR' does not exist.\
  The app is not correctly installed, you should remove it first."
 
 # Install dependencies
 ynh_package_install_from_equivs ../conf/${DEPS_PKG_NAME}.control \
-  || die "Unable to install dependencies"
+  || ynh_die "Unable to install dependencies"
 
 # Update sources
 sudo cp -r ../patches "$DESTDIR"
@@ -70,7 +69,7 @@ exec_cmd "cd \"${DESTDIR}\" \
  && git reset --hard -q && git fetch -q --tags origin \
  && git checkout -q v${VERSION} \
  && git apply ./patches/*.patch" \
-  || die "Unable to update MediaGoblin sources."
+  || ynh_die "Unable to update MediaGoblin sources."
 sudo rm -rf "${DESTDIR}/patches"
 
 # Copy additionnal plugins and fix permissions
@@ -84,11 +83,11 @@ else
   tmp_conf="../conf/mediagoblin.ini"
 fi
 mediagoblin_conf="${DESTDIR}/mediagoblin.ini"
-sed -i "s@#DOMAIN#@${domain}@g"        "$tmp_conf"
-sed -i "s@#PATH#@${path}@g"            "$tmp_conf"
-sed -i "s@#DBNAME#@${dbname}@g"        "$tmp_conf"
-sed -i "s@#ADMIN#@${admin}@g"          "$tmp_conf"
-sed -i "s@#DATADIR#@${DATADIR}@g"      "$tmp_conf"
+sed -i "s@#DOMAIN#@${domain}@g"   "$tmp_conf"
+sed -i "s@#PATH#@${path}@g"       "$tmp_conf"
+sed -i "s@#DBNAME#@${dbname}@g"   "$tmp_conf"
+sed -i "s@#ADMIN#@${admin}@g"     "$tmp_conf"
+sed -i "s@#DATADIR#@${DATADIR}@g" "$tmp_conf"
 sudo cp "$tmp_conf" "$mediagoblin_conf"
 sudo chown mediagoblin: "$mediagoblin_conf"
 
@@ -113,7 +112,7 @@ exec_cmd "cd \"${DESTDIR}\" \
  && ./bin/gmg dbupdate \
  && cd extlib/ynhauth \
  && ${DESTDIR}/bin/python ./setup.py develop --upgrade" &>>$SETUPLOG \
-  || die "Unable to upgrade MediaGoblin. Please see log at ${SETUPLOG}"
+  || ynh_die "Unable to upgrade MediaGoblin. Please see log at ${SETUPLOG}"
 
 # Create needed directories with proper ownership
 sudo install -o mediagoblin -g root -m 770 -d /var/log/${app}
@@ -130,7 +129,7 @@ sed -i "s@#DESTDIR#@${DESTDIR}@g" ../conf/nginx.conf
 sed -i "s@#DATADIR#@${DATADIR}@g" ../conf/nginx.conf
 sudo cp ../conf/nginx.conf "$nginx_conf"
 
-# Reload services
+# Enable and reload services
 sudo systemctl daemon-reload
 sudo systemctl -q enable mediagoblin-celeryd.service
 sudo systemctl -q enable mediagoblin-paster.service

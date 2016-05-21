@@ -2,6 +2,8 @@
 # Common variables
 #
 
+app="mediagoblin"
+
 # MediaGoblin version
 VERSION=0.9.0
 
@@ -12,12 +14,8 @@ DEPS_PKG_NAME="mediagoblin-deps"
 # Common helpers
 #
 
-# Print a message to stderr and exit
-# usage: die msg [retcode]
-die() {
-  printf "%s" "$1" 1>&2
-  exit "${2:-1}"
-}
+# Source YunoHost helpers
+. /usr/share/yunohost/helpers
 
 # Execute a command as another user (mediagoblin by default)
 # usage: exec_cmd cmd [user]
@@ -28,7 +26,7 @@ exec_cmd() {
 # Check system requirements
 check_requirements() {
   [[ $(lsb_release -r | awk '{split($2,r,"."); print r[1]}') -ge 8 ]] \
-    || die "GNU MediaGoblin ${VERSION} requires at least Debian Jessie."
+    || ynh_die "GNU MediaGoblin ${VERSION} requires at least Debian Jessie."
   [[ -d /run/systemd/system ]] \
-    || die "The application is only compatible with systemd yet."
+    || ynh_die "The application is only compatible with systemd yet."
 }

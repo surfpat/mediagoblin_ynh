@@ -1,20 +1,16 @@
 #!/bin/bash
 
-# Set app specific variables
-app=${!#}
-dbname=$app
-dbuser=$app
-
 # Load common variables and helpers
 . ./_common.sh
 
-# Source app helpers
-. /usr/share/yunohost/helpers
+# Set app specific variables
+dbname=$app
+dbuser=$app
 
-# Retrieve settings
+# Retrieve app settings
 domain=$(ynh_app_setting_get $app domain)
 
-# Stop and remove the service
+# Stop and remove services
 sudo systemctl -q stop mediagoblin-paster || true
 sudo systemctl -q stop mediagoblin-celeryd || true
 sudo systemctl -q disable mediagoblin-paster
@@ -34,7 +30,7 @@ exec_cmd "cd && dropuser ${dbuser}" postgres
 
 # Remove app dependencies and system user
 ynh_package_autoremove "$DEPS_PKG_NAME" || true
-sudo deluser --quiet --remove-home --system mediagoblin
+sudo deluser --quiet --remove-home mediagoblin >/dev/null
 
 # Reload services
 sudo systemctl daemon-reload
