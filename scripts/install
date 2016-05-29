@@ -11,7 +11,7 @@ is_public=$4
 registration=$5
 
 # Load common variables
-. ./_common.sh
+#. ./_common.sh
 
 # Check system requirements
 check_requirements || ynh_die "System requirements are not met."
